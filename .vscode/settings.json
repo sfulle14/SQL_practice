@@ -8,5 +8,6 @@
         "fstream": "cpp",
         "string": "cpp",
         "ostream": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": true
 }

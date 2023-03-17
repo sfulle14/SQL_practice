@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <cassert>
+#include <regex>
 
 
 using namespace std;
@@ -11,20 +12,38 @@ using namespace std;
 void readFile(string fileName, vector<string>& fileText);
 
 int main() {
-    //declare variables
+    //declare local variables
     string fileName;
     vector<string> fileText;
-    int n=0;
+    int mainInsert;
+    string updateTable;
 
 
+    //get file from user
     cout<<"File to convert:";
     //cin >> fileName;
-    //fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.sql";
-    fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.txt";
+    fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.sql";
+    //fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.txt";
 
     readFile(fileName, fileText);
 
-    cout<<"Do i make it here!!!\n";
+    cout <<"Enter name of table to UPDATE:";
+    cin >> updateTable;
+    updateTable = "tblCaseCharge";
+
+    /*
+    for(int i=0; i<fileText.size(); i++){
+        cout <<fileText[i]<< endl;
+    }
+    */
+
+   for(int i=0; i<fileText.size(); i++){
+        if(fileText[i] == "INSERT INTO " + updateTable){
+            mainInsert = i;
+            cout <<mainInsert<<endl;
+            break;
+        }
+    }
 
 
     return 0;
@@ -32,27 +51,19 @@ int main() {
 
 //Function to read the file to a vector of strings.
 void readFile(string fileName, vector<string>& fileText){
-    //declare variables
-    int n=0;
+    //declare local variables
     fstream fileIn; 
     string line;
 
-    //open file
+    //open user provided file
     fileIn.open(fileName);
     assert(fileIn);
-    //everything works up to here!!
  
     //looping through file line by line
     while(!fileIn.eof()){
-        cout << "\nreadFile while loop\n"; //Making it into the loop
-        //getline(fileIn, fileText[n]);
-        fileText[n] = fileIn.get();
-        cout << fileText[n];
-        n++;
-        
+        getline(fileIn, line);
+        fileText.push_back(line);      
     }
-    cout << "readFile exited while loop\n";
-
     fileIn.close();
 }
 
