@@ -1,0 +1,7 @@
+INT                 --Whole number
+DECIMAL(M,N)        --Decimal numbers
+VARCHAR(1)          --string of text of length 1
+BLOB                --binary large object, stores large data
+DATE                --'YYY-MM-DD'
+TIMESTAMP           --'YYYY-MM-DD HH:MM:SS' - used for recording actions 
+

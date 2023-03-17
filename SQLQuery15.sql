@@ -1,0 +1,561 @@
+INSERT INTO tblLookup
+            (Code
+            ,Description
+            ,LookupGroup
+            ,LookupKey
+            ,UseDescription
+            ,DisplayOrder
+            ,OBTSCode
+            ,TCATSCode
+            ,SRSCode
+            ,Active
+            ,ICPEnabled
+            ,CreateByUserID
+            ,CreateDate
+            ,ModifyByUserID
+            ,ModifyDate
+            ,CCISCode
+            ,CCOCSubType)
+  SELECT -- LookupID
+         CASE WHEN ISNULL(LTRIM(RTRIM(P.Plea_Code)),'') > '' THEN LTRIM(RTRIM(P.Plea_Code)) ELSE CONVERT(VARCHAR(50),P.Plea_Id) END AS Code
+        ,LTRIM(RTRIM(P.Plea)) AS Description
+        ,'CourtFinalPlea' AS LookupGroup
+        ,CONVERT(VARCHAR(50),P.Plea_Id) AS LookupKey
+        ,'Pleas' AS UseDescription
+        ,99999 AS DisplayOrder
+        ,'' AS OBTSCode
+        ,'' AS TCATSCode
+        ,'' AS SRSCode
+        ,1 AS Active
+        ,1 AS ICPEnabled
+        ,1 AS CreateByUserID
+        ,CURRENT_TIMESTAMP AS CreateDate
+        ,1 AS ModifyByUserID
+        ,CURRENT_TIMESTAMP AS ModifyDate
+        ,CONVERT(VARCHAR(50),P.Plea_Id) AS CCISCode
+        ,'' AS CCOCSubType
+    FROM BMLakewood_Source.dbo.Pleas P WITH (NOLOCK)
+         LEFT OUTER JOIN tblLookup L WITH (NOLOCK) ON L.LookupGroup = 'CourtFinalPlea' AND L.LookupKey = CONVERT(VARCHAR(50),P.Plea_Id) AND L.UseDescription = 'Pleas'
+   WHERE L.Code IS NULL
+ORDER BY P.Plea_Id
+--9
+
+UPDATE tblLookup
+SET 
+	Description = 'Waive-Waive'
+WHERE LookupGroup = 'CourtFinalPlea' AND Description = 'Waive-Guilty'
+
+
+INSERT INTO tblLookup
+            (Code
+            ,Description
+            ,LookupGroup
+            ,LookupKey
+            ,UseDescription
+            ,DisplayOrder
+            ,OBTSCode
+            ,TCATSCode
+            ,SRSCode
+            ,Active
+            ,ICPEnabled
+            ,CreateByUserID
+            ,CreateDate
+            ,ModifyByUserID
+            ,ModifyDate
+            ,CCISCode
+            ,CCOCSubType)
+  SELECT -- LookupID
+         CASE WHEN ISNULL(LTRIM(RTRIM(S.Sentence_Code)),'') > '' THEN LTRIM(RTRIM(S.Sentence_Code)) ELSE CONVERT(VARCHAR(50),S.Sentence_Id) END AS Code
+        ,LTRIM(RTRIM(S.Sentence)) AS Description
+        ,'CourtActionTaken' AS LookupGroup
+        ,CONVERT(VARCHAR(50),S.Sentence_Id) AS LookupKey
+        ,'Sentences' AS UseDescription
+        ,99999 AS DisplayOrder
+        ,'' AS OBTSCode
+        ,'' AS TCATSCode
+        ,'' AS SRSCode
+        ,1 AS Active
+        ,1 AS ICPEnabled
+        ,1 AS CreateByUserID
+        ,CURRENT_TIMESTAMP AS CreateDate
+        ,1 AS ModifyByUserID
+        ,CURRENT_TIMESTAMP AS ModifyDate
+        ,CONVERT(VARCHAR(50),S.Sentence_Id) AS CCISCode
+        ,'' AS CCOCSubType
+    FROM BMLakewood_Source.dbo.Sentences S WITH (NOLOCK)
+         LEFT OUTER JOIN tblLookup L WITH (NOLOCK) ON L.LookupGroup = 'CourtActionTaken' AND L.LookupKey = CONVERT(VARCHAR(50),S.Sentence_Id) AND L.UseDescription = 'Sentences'
+   WHERE L.Code IS NULL
+ORDER BY S.Sentence_Id
+--102
+
+
+;WITH BOND_SETUP_cte AS
+      (SELECT BSET.Case_Violation_Id
+             ,CASE WHEN ISNULL(BSET.Bond_Value,0) > 0 THEN BSET.Bond_Value ELSE ISNULL(BSET.Bond_Fee,0) END BondAmount
+             ,ROW_NUMBER() OVER(PARTITION BY BSET.Case_Violation_Id ORDER BY BSET.Date_Bond_Setup DESC) AS SeqNbr
+         FROM BMLakewood_Source.dbo.Bond_Setups BSET WITH (NOLOCK))
+INSERT INTO tblCaseCharge
+            (CaseID
+            ,SAOCaseNumber
+            ,OffenseDate
+            ,ArrestDate
+            ,ArrestingAgencyID
+            ,ArrestingCaseNumber
+            ,OBTSNumber
+            ,CitationID
+            ,StatuteID
+            ,ChargePhase
+            ,SetBondAmount
+            ,InitialSequenceNumber
+            ,InitialStatuteID
+            ,InitialChargeStatus
+            ,InitialDrugType
+            ,InitialChargeWeapons
+            ,InitialChargeRange
+            ,InitialChargeAmount
+            ,InitialChargeUnit
+            ,InitialStatuteDescription
+            ,InitialChargeLevel
+            ,InitialChargeDegree
+            ,InitialGeneralOffenseCharacter
+            ,InitialOffenseActivity
+            ,ProsecutorSequenceNumber
+            ,ProsecutorStatuteID
+            ,ProsecutorChargeStatus
+            ,ProsecutorDrugType
+            ,ProsecutorChargeWeapons
+            ,ProsecutorChargeRange
+            ,ProsecutorChargeAmount
+            ,ProsecutorChargeUnit
+            ,ProsecutorFileDate
+            ,ProsecutorFinalDecisionDate
+            ,ProsecutorFinalAction
+            ,ProsecutorDefermentType
+            ,ProsecutorDefermentDate
+            ,ProsecutorStatuteDescription
+            ,ProsecutorChargeLevel
+            ,ProsecutorChargeDegree
+            ,ProsecutorGeneralOffenseCharacter
+            ,ProsecutorOffenseActivity
+            ,CourtSequenceNumber
+            ,CourtStatuteID
+            ,CourtChargeStatus
+            ,CourtDrugType
+            ,CourtChargeWeapons
+            ,CourtChargeRange
+            ,CourtChargeAmount
+            ,CourtChargeUnit
+            ,CourtDecisionDate
+            ,CourtActionTaken
+            ,CourtFinalPlea
+            ,CourtFinalPleaEnteredDate
+            ,CourtStatuteDescription
+            ,CourtChargeLevel
+            ,CourtChargeDegree
+            ,CourtGeneralOffenseCharacter
+            ,CourtOffenseActivity
+            ,ReOpenDate
+            ,ReOpenReason
+            ,ReOpenedChargeClosedDate
+            ,AppealDate
+            ,ArrestPartyNameID
+            ,DispositionPartyNameID
+            ,SentenceImposedDate
+            ,SentenceEffectiveDate
+            ,JudgeID
+            ,JurisdictionRetained
+            ,SentenceStatus
+            ,SentenceStatusCaseNumber
+            ,SentenceStatusChargeCount
+            ,SentenceNotes
+            ,CourtDocketNumber
+            ,MinConfinementCode
+            ,MaxConfinementCode
+            ,MinConfinementYears
+            ,MinConfinementMonths
+            ,MinConfinementDays
+            ,MaxConfinementYears
+            ,MaxConfinementMonths
+            ,MaxConfinementDays
+            ,OBTSMinConfinementYears
+            ,OBTSMinConfinementMonths
+            ,OBTSMinConfinementDays
+            ,OBTSMaxConfinementYears
+            ,OBTSMaxConfinementMonths
+            ,OBTSMaxConfinementDays
+            ,ConfinementTypeCode
+            ,SuspendConfinementYears
+            ,SuspendConfinementMonths
+            ,SuspendConfinementDays
+            ,OBTSSuspendConfinementYears
+            ,OBTSSuspendConfinementMonths
+            ,OBTSSuspendConfinementDays
+            ,CreditTimeServedCode
+            ,CreditTimeServedYears
+            ,CreditTimeServedMonths
+            ,CreditTimeServedDays
+            ,OBTSCreditTimeServedHours
+            ,ProbationTypeCode
+            ,ProbationLengthCode
+            ,ProbationLengthYears
+            ,ProbationLengthMonths
+            ,ProbationLengthDays
+            ,OBTSProbationLengthYears
+            ,OBTSProbationLengthMonths
+            ,OBTSProbationLengthDays
+            ,CommunityControlYears
+            ,CommunityControlMonths
+            ,CommunityControlDays
+            ,OBTSCommunityControlYears
+            ,OBTSCommunityControlMonths
+            ,OBTSCommunityControlDays
+            ,DLActionCode
+            ,LicenseSuspendedCode
+            ,LicenseSuspendedYears
+            ,LicenseSuspendedMonths
+            ,LicenseSuspendedDays
+            ,LicenseReceivedByCourt
+            ,OBTSLicenseSuspendedYears
+            ,OBTSLicenseSuspendedMonths
+            ,OBTSLicenseSuspendedDays
+            ,FineAmount
+            ,CourtCostAmount
+            ,RestitutionAmount
+            ,SentenceProvision1
+            ,SentenceProvision2
+            ,SentenceProvision3
+            ,SentenceProvision4
+            ,SentenceProvision5
+            ,SpecialSentenceProvision1
+            ,SpecialSentenceProvision2
+            ,SpecialSentenceProvision3
+            ,SpecialSentenceProvision4
+            ,SpecialSentenceProvision5
+            ,SpecialSentenceProvision6
+            ,SpecialSentenceProvision7
+            ,DrugTraffickingTermYears
+            ,DrugTraffickingTermMonths
+            ,DrugTraffickingTermDays
+            ,OBTSDrugTraffickingTermYears
+            ,OBTSDrugTraffickingTermMonths
+            ,OBTSDrugTraffickingTermDays
+            ,CostOfSupervisionRate
+            ,CountyOfSupervision
+            ,CommunityServiceHours
+            ,RestitutionID
+            ,PlaintiffAttorneyID
+            ,DefendantAttorneyID
+            ,TrialType
+            ,VerdictTypeCode
+            ,AppearanceTypeCode
+            ,DLRestrictedCode
+            ,LicenseRestrictedCode
+            ,LicenseRestrictedYears
+            ,LicenseRestrictedMonths
+            ,LicenseRestrictedDays
+            ,OBTSLicenseRestrictedYears
+            ,OBTSLicenseRestrictedMonths
+            ,OBTSLicenseRestrictedDays
+            ,FailureTermDays
+            ,FailureTermCreditTimeServed
+            ,GuidelinesWaived
+            ,DLReExam
+            ,IsDocketed
+            ,DocketSentencingChangesOnly
+            ,CaseProcessActionID
+            ,SentencingJudgeID
+            ,Commitment
+            ,FollowedBy
+            ,JudicialWarning
+            ,AlternativeCourtSanction
+            ,NonJudicial
+            ,ImpoundmentVIN
+            ,ImpoundmentNoticeDate
+            ,ImpoundmentPlateNumber
+            ,ImpoundmentVehicleYear
+            ,ImpoundmentVehicleMake
+            ,ImpoundmentVehicleModel
+            ,ImpoundmentVehicleColor
+            ,ImpoundmentDays
+            ,ImpoundmentOwnerID
+            ,ImpoundmentLienHolderID
+            ,VerdictDate
+            ,IDISchool
+            ,ChildRestraintSchool
+            ,CreateByUserID
+            ,CreateDate
+            ,ModifyByUserID
+            ,ModifyDate
+            ,OBTSErrorMessages
+            ,DispositionJudgeID
+            ,SentencingSchoolHours
+            ,DisposedByID
+            ,BookingNumber
+            ,RefNumber
+            ,CommunityControlLengthCode
+            ,ProbationStartDate
+            ,ConfinementStartDate
+            ,WaivedAttorney
+            ,MandateDate
+            ,AppealBondAmount
+            ,AmendedBondAmount
+            ,DirectFiling
+            ,RestitutionAmountSentencing
+            ,ComplaintNumber
+            ,ChargePoints
+            ,DLSuspensionStartDate
+            ,DLSuspensionEndDate
+            ,DLModifySuspensionStartDate
+            ,DLModifySuspensionEndDate
+            ,DLModificationCode
+            ,CourtStatuteModifiedReason
+            ,InitialEssentialFacts
+            ,ProsecutorEssentialFacts
+            ,CourtEssentialFacts
+            ,InitialEssentialFactID
+            ,ProsecutorEssentialFactID
+            ,CourtEssentialFactID
+            ,ProbationEndDate)
+  SELECT -- CaseChargeID
+         C.CaseID AS CaseID
+        ,'' AS SAOCaseNumber
+        ,TCC.Date_Of_Violation AS OffenseDate
+        ,TCC.Date_Arrested AS ArrestDate
+        ,C.AgencyID AS ArrestingAgencyID
+        ,C.CaseNumber AS ArrestingCaseNumber
+        ,'' AS OBTSNumber
+        ,0 AS CitationID
+        ,S.StatuteID AS StatuteID
+        ,CASE WHEN ISNULL(TCD.Date_Of_Sentence,CS.Date_Of_Sentence) IS NOT NULL THEN 'C' ELSE 'I' END AS ChargePhase
+        ,ISNULL(BS.BondAmount,0) AS SetBondAmount
+        ,ISNULL(TRY_CONVERT(INT,CV.Counter),0) AS InitialSequenceNumber
+        ,S.StatuteID AS InitialStatuteID
+        ,CASE WHEN TCC.Date_Arrested IS NOT NULL THEN 'F' WHEN ISNULL(TCC.Ticket_Number,'') > '' THEN 'CI' ELSE 'P' END AS InitialChargeStatus
+        ,'' AS InitialDrugType
+        ,'' AS InitialChargeWeapons
+        ,'' AS InitialChargeRange
+        ,0 AS InitialChargeAmount
+        ,'' AS InitialChargeUnit
+        ,ISNULL(LTRIM(RTRIM(CV.Case_Violation_Description)),ISNULL(S.StatuteLongDescription,'')) AS InitialStatuteDescription
+        ,CASE ISNULL(SUBSTRING(LTRIM(RTRIM(DOV.Degree)),1,1),'') WHEN 'U' THEN 'F' ELSE ISNULL(SUBSTRING(LTRIM(RTRIM(DOV.Degree)),1,1),'') END AS InitialChargeLevel
+        ,ISNULL(LTRIM(RTRIM(DOV.Degree)),'') AS InitialChargeDegree
+        ,'' AS InitialGeneralOffenseCharacter
+        ,'' AS InitialOffenseActivity
+        ,ISNULL(TRY_CONVERT(INT,CV.Counter),0) AS ProsecutorSequenceNumber
+        ,0 AS ProsecutorStatuteID
+        ,'' AS ProsecutorChargeStatus
+        ,'' AS ProsecutorDrugType
+        ,'' AS ProsecutorChargeWeapons
+        ,'' AS ProsecutorChargeRange
+        ,0 AS ProsecutorChargeAmount
+        ,'' AS ProsecutorChargeUnit
+        ,NULL AS ProsecutorFileDate
+        ,NULL AS ProsecutorFinalDecisionDate
+        ,'' AS ProsecutorFinalAction
+        ,'' AS ProsecutorDefermentType
+        ,NULL AS ProsecutorDefermentDate
+        ,'' AS ProsecutorStatuteDescription
+        ,'' AS ProsecutorChargeLevel
+        ,'' AS ProsecutorChargeDegree
+        ,'' AS ProsecutorGeneralOffenseCharacter
+        ,'' AS ProsecutorOffenseActivity
+        ,ISNULL(TRY_CONVERT(INT,CV.Counter),0) AS CourtSequenceNumber
+        ,SSNT.StatuteID AS CourtStatuteID
+        ,CASE WHEN SSNT.StatuteID = S.StatuteID THEN 'S' ELSE '' END AS CourtChargeStatus
+        ,'' AS CourtDrugType
+        ,'' AS CourtChargeWeapons
+        ,'' AS CourtChargeRange
+        ,0 AS CourtChargeAmount
+        ,'' AS CourtChargeUnit
+        ,ISNULL(TCD.Date_Of_Sentence,CS.Date_Of_Sentence) AS CourtDecisionDate
+        ,CASE WHEN ISNULL(LTRIM(RTRIM(SNT.Sentence_Code)),'') > '' THEN LTRIM(RTRIM(SNT.Sentence_Code)) ELSE CONVERT(VARCHAR(50),SNT.Sentence_Id) END AS CourtActionTaken
+        ,LTRIM(RTRIM(PSNT.Plea_Code)) AS CourtFinalPlea
+     --,CONVERT(VARCHAR(50),PSNT.Plea_Id) AS CourtFinalPlea
+        ,ISNULL(TCD.Date_Final_Plea,CS.Date_Of_Sentence) AS CourtFinalPleaEnteredDate
+        ,CASE WHEN SSNT.StatuteID = S.StatuteID THEN ISNULL(LTRIM(RTRIM(CV.Case_Violation_Description)),ISNULL(SSNT.StatuteLongDescription,'')) ELSE ISNULL(SSNT.StatuteLongDescription,'') END AS CourtStatuteDescription
+        ,CASE ISNULL(SUBSTRING(LTRIM(RTRIM(DOVSNT.Degree)),1,1),'') WHEN 'U' THEN 'F' ELSE ISNULL(SUBSTRING(LTRIM(RTRIM(DOVSNT.Degree)),1,1),'') END AS CourtChargeLevel
+        ,ISNULL(LTRIM(RTRIM(DOVSNT.Degree)),'') AS CourtChargeDegree
+        ,'' AS CourtGeneralOffenseCharacter
+        ,'' AS CourtOffenseActivity
+        ,NULL AS ReOpenDate
+        ,'' AS ReOpenReason
+        ,NULL AS ReOpenedChargeClosedDate
+        ,NULL AS AppealDate
+        ,0 AS ArrestPartyNameID
+        ,0 AS DispositionPartyNameID
+        ,ISNULL(TCD.Date_Of_Sentence,CS.Date_Of_Sentence) AS SentenceImposedDate
+        ,ISNULL(TCD.Jail_From,CS.Jail_From) AS SentenceEffectiveDate
+        ,C.JudgeID AS JudgeID
+        ,0 AS JurisdictionRetained
+        ,0 AS SentenceStatus
+        ,'' AS SentenceStatusCaseNumber
+        ,0 AS SentenceStatusChargeCount
+        ,LEFT(ISNULL(LTRIM(RTRIM(CS.Comments)) + '   ','') + ISNULL(LTRIM(RTRIM(TCD.Suspension_Comments)),''),5000) AS SentenceNotes
+        ,'' AS CourtDocketNumber
+        ,'' AS MinConfinementCode
+        ,'' AS MaxConfinementCode
+        ,0 AS MinConfinementYears
+        ,0 AS MinConfinementMonths
+        ,0 AS MinConfinementDays
+        ,0 AS MaxConfinementYears
+        ,0 AS MaxConfinementMonths
+        ,CASE WHEN ISNULL(TCD.Total_Jail,0) > 0 THEN TCD.Total_Jail ELSE ISNULL(CS.Jail_Days,0) END AS MaxConfinementDays
+        ,0 AS OBTSMinConfinementYears
+        ,0 AS OBTSMinConfinementMonths
+        ,0 AS OBTSMinConfinementDays
+        ,0 AS OBTSMaxConfinementYears
+        ,0 AS OBTSMaxConfinementMonths
+        ,CASE WHEN ISNULL(TCD.Total_Jail,0) > 0 THEN TCD.Total_Jail ELSE ISNULL(CS.Jail_Days,0) END AS OBTSMaxConfinementDays
+        ,CASE WHEN ISNULL(TCD.Total_Jail,0) > 0 THEN 'C' WHEN ISNULL(CS.Jail_Days,0) > 0 THEN 'C' ELSE '' END AS ConfinementTypeCode
+        ,0 AS SuspendConfinementYears
+        ,0 AS SuspendConfinementMonths
+        ,CASE WHEN ISNULL(TCD.Suspended_Jail,0) > 0 THEN TCD.Suspended_Jail ELSE ISNULL(CS.Jail_Days_Suspended,0) END AS SuspendConfinementDays
+        ,0 AS OBTSSuspendConfinementYears
+        ,0 AS OBTSSuspendConfinementMonths
+        ,0 AS OBTSSuspendConfinementDays
+        ,'' AS CreditTimeServedCode
+        ,0 AS CreditTimeServedYears
+        ,0 AS CreditTimeServedMonths
+        ,CASE WHEN ISNULL(TCD.Credit_Days,0) > 0 THEN TCD.Credit_Days ELSE ISNULL(CS.Jail_Days_In_Custody,0) END AS CreditTimeServedDays
+        ,0 AS OBTSCreditTimeServedHours
+        ,'' AS ProbationTypeCode
+        ,'' AS ProbationLengthCode
+        ,0 AS ProbationLengthYears
+        ,0 AS ProbationLengthMonths
+        ,ISNULL(DATEDIFF(DAY,C.ProbationStartDate,C.ProbationEndDate),0) AS ProbationLengthDays
+        ,0 AS OBTSProbationLengthYears
+        ,0 AS OBTSProbationLengthMonths
+        ,ISNULL(DATEDIFF(DAY,C.ProbationStartDate,C.ProbationEndDate),0) AS OBTSProbationLengthDays
+        ,0 AS CommunityControlYears
+        ,0 AS CommunityControlMonths
+        ,0 AS CommunityControlDays
+        ,0 AS OBTSCommunityControlYears
+        ,0 AS OBTSCommunityControlMonths
+        ,0 AS OBTSCommunityControlDays
+		,CASE WHEN ISNULL(CS.License_Suspension_Days,0) > 0 THEN '1' END AS DLActionCode	 --GBDI-755: Source: dbo.Case_Sentences: Remove Driving_Privledges & BMV_Points fields from latest tblCaseCharge Conversion Logic
+        --,CASE WHEN ISNULL(CS.License_Suspension_Days,0) > 0 THEN '1' WHEN ISNULL(CS.Driving_Privledges,0) > 0 THEN '2' ELSE '0' END AS DLActionCode 
+        ,L.Code AS LicenseSuspendedCode	--GBDI-815:Map from dbo.Traffif_Criminal_Disposition the BMV_Susp_Class_Id to tblCaseCharge.LicenseSuspendedCode field
+        ,0 AS LicenseSuspendedYears
+        ,0 AS LicenseSuspendedMonths
+        ,ISNULL(CS.License_Suspension_Days,0) AS LicenseSuspendedDays
+        ,0 AS LicenseReceivedByCourt
+        ,0 AS OBTSLicenseSuspendedYears
+        ,0 AS OBTSLicenseSuspendedMonths
+        ,ISNULL(CS.License_Suspension_Days,0) AS OBTSLicenseSuspendedDays
+        ,ISNULL(CS.Fine,0) AS FineAmount
+        ,0 AS CourtCostAmount
+        ,ISNULL(CS.Restitution_Amount,0) AS RestitutionAmount
+        ,'' AS SentenceProvision1
+        ,'' AS SentenceProvision2
+        ,'' AS SentenceProvision3
+        ,'' AS SentenceProvision4
+        ,'' AS SentenceProvision5
+        ,'' AS SpecialSentenceProvision1
+        ,'' AS SpecialSentenceProvision2
+        ,'' AS SpecialSentenceProvision3
+        ,'' AS SpecialSentenceProvision4
+        ,'' AS SpecialSentenceProvision5
+        ,'' AS SpecialSentenceProvision6
+        ,'' AS SpecialSentenceProvision7
+        ,0 AS DrugTraffickingTermYears
+        ,0 AS DrugTraffickingTermMonths
+        ,0 AS DrugTraffickingTermDays
+        ,0 AS OBTSDrugTraffickingTermYears
+        ,0 AS OBTSDrugTraffickingTermMonths
+        ,0 AS OBTSDrugTraffickingTermDays
+        ,0 AS CostOfSupervisionRate
+        ,0 AS CountyOfSupervision
+        ,ISNULL(CS.CS_Hours,0) AS CommunityServiceHours
+        ,0 AS RestitutionID
+        ,0 AS PlaintiffAttorneyID
+        ,ISNULL(C.DefendantAttorneyID,0) AS DefendantAttorneyID
+        ,'' AS TrialType
+        ,'' AS VerdictTypeCode
+        ,'' AS AppearanceTypeCode
+        ,'' AS DLRestrictedCode
+        ,'' AS LicenseRestrictedCode
+        ,0 AS LicenseRestrictedYears
+        ,0 AS LicenseRestrictedMonths
+        ,0 AS LicenseRestrictedDays
+        ,0 AS OBTSLicenseRestrictedYears
+        ,0 AS OBTSLicenseRestrictedMonths
+        ,0 AS OBTSLicenseRestrictedDays
+        ,0 AS FailureTermDays
+        ,0 AS FailureTermCreditTimeServed
+        ,0 AS GuidelinesWaived
+        ,0 AS DLReExam
+        ,0 AS IsDocketed
+        ,0 AS DocketSentencingChangesOnly
+        ,0 AS CaseProcessActionID
+        ,ISNULL(PJSNT.PartyID,0) AS SentencingJudgeID
+        ,'' AS Commitment
+        ,'' AS FollowedBy
+        ,0 AS JudicialWarning
+        ,0 AS AlternativeCourtSanction
+        ,0 AS NonJudicial
+        ,'' AS ImpoundmentVIN
+        ,NULL AS ImpoundmentNoticeDate
+        ,'' AS ImpoundmentPlateNumber
+        ,0 AS ImpoundmentVehicleYear
+        ,'' AS ImpoundmentVehicleMake
+        ,'' AS ImpoundmentVehicleModel
+        ,'' AS ImpoundmentVehicleColor
+        ,0 AS ImpoundmentDays
+        ,0 AS ImpoundmentOwnerID
+        ,0 AS ImpoundmentLienHolderID
+        ,NULL AS VerdictDate
+        ,0 AS IDISchool
+        ,0 AS ChildRestraintSchool
+        ,C.CreateByUserID AS CreateByUserID
+        ,C.CreateDate AS CreateDate
+        ,C.ModifyByUserID AS ModifyByUserID
+        ,C.ModifyDate AS ModifyDate
+        ,'' AS OBTSErrorMessages
+        ,ISNULL(PJSNT.PartyID,0) AS DispositionJudgeID
+        ,0 AS SentencingSchoolHours
+        ,0 AS DisposedByID
+        ,'' AS BookingNumber
+        ,CV.Case_Violation_Id AS RefNumber
+        ,'' AS CommunityControlLengthCode
+        ,C.ProbationStartDate AS ProbationStartDate
+        ,NULL AS ConfinementStartDate
+        ,0 AS WaivedAttorney
+        ,NULL AS MandateDate
+        ,0 AS AppealBondAmount
+        ,0 AS AmendedBondAmount
+        ,0 AS DirectFiling
+        ,0 AS RestitutionAmountSentencing
+        ,ISNULL(LTRIM(RTRIM(TCC.Incident_Number)),'') AS ComplaintNumber
+		,ISNULL(TCD.Points_Assessed,0) AS ChargePoints		--GBDI-755: Source: dbo.Case_Sentences: Remove Driving_Privledges & BMV_Points fields from latest tblCaseCharge Conversion Logic
+        --,CASE WHEN ISNULL(TCD.Points_Assessed,0) > 0 THEN TCD.Points_Assessed ELSE ISNULL(CS.BMV_Points,0) END AS ChargePoints
+        ,CS.License_Suspension_From AS DLSuspensionStartDate
+        ,CS.License_Suspension_To AS DLSuspensionEndDate
+        ,NULL AS DLModifySuspensionStartDate
+        ,NULL AS DLModifySuspensionEndDate
+        ,'' AS DLModificationCode
+        ,'' AS CourtStatuteModifiedReason
+        ,'' AS InitialEssentialFacts
+        ,'' AS ProsecutorEssentialFacts
+        ,'' AS CourtEssentialFacts
+        ,0 AS InitialEssentialFactID
+        ,0 AS ProsecutorEssentialFactID
+        ,0 AS CourtEssentialFactID
+        ,C.ProbationEndDate AS ProbationEndDate
+    FROM BMLakewood_Source.dbo.Case_Violations CV WITH (NOLOCK)
+         INNER JOIN BMLakewood_Source.dbo.Traffic_Criminal_Cases TCC WITH (NOLOCK) ON TCC.Case_Number = CV.Case_Number
+         INNER JOIN tblCase C WITH (NOLOCK) ON C.CaseNumber = CV.Case_Number
+         LEFT OUTER JOIN BMLakewood_Source.dbo.Case_Sentences CS WITH (NOLOCK) ON CS.Case_Violation_Id = CV.Case_Violation_Id
+         LEFT OUTER JOIN XREF_TRCR_Disposition TCD WITH (NOLOCK) ON TCD.Case_Violation_Id = CV.Case_Violation_Id AND TCD.SeqNbr = 1
+         LEFT OUTER JOIN BMLakewood_Source.dbo.Pleas PSNT WITH (NOLOCK) ON PSNT.Plea_Id = ISNULL(TCD.Final_Plea_Id,CS.Plea_Id)
+         LEFT OUTER JOIN BMLakewood_Source.dbo.Sentences SNT WITH (NOLOCK) ON SNT.Sentence_Id = ISNULL(TCD.Sentence_Id,CS.Sentence_Id)
+         LEFT OUTER JOIN BMLakewood_Source.dbo.Violation_Codes VC WITH (NOLOCK) ON VC.violation_Id = CV.Violation_Id
+         LEFT OUTER JOIN tblStatute S WITH (NOLOCK) ON S.StatuteNumber = VC.Section_Number	--GBDI-721: Citation Tab Issue - Not enabled on Cases w/Citation Records
+         --LEFT OUTER JOIN tblStatute S WITH (NOLOCK) ON S.StatuteID = CV.Violation_Id		--GBDI-721: Citation Tab Issue - Not enabled on Cases w/Citation Records
+         LEFT OUTER JOIN tblStatute SSNT WITH (NOLOCK) ON SSNT.StatuteNumber = VC.Section_Number   --GBDI-721: Citation Tab Issue - Not enabled on Cases w/Citation Records
+         --LEFT OUTER JOIN tblStatute SSNT WITH (NOLOCK) ON SSNT.StatuteID = CS.Violation_Id	--GBDI-721: Citation Tab Issue - Not enabled on Cases w/Citation Records
+         LEFT OUTER JOIN BMLakewood_Source.dbo.Degree_Of_Violations DOV WITH (NOLOCK) ON DOV.Degree_Of_Violation_Id = CV.Degree_Of_Violation_Id
+         LEFT OUTER JOIN BMLakewood_Source.dbo.Degree_Of_Violations DOVSNT WITH (NOLOCK) ON DOVSNT.Degree_Of_Violation_Id = CS.Degree_Of_Violation_Id
+         LEFT OUTER JOIN tblParty PJSNT WITH (NOLOCK) ON PJSNT.PrimaryPartyType = 'JDG' AND PJSNT.WebValidation = CONVERT(VARCHAR(255),ISNULL(TCD.Judge_Id,CS.Judge_Id))
+         LEFT OUTER JOIN BOND_SETUP_cte BS WITH (NOLOCK) ON BS.Case_Violation_Id = CV.Case_Violation_Id AND BS.SeqNbr = 1
+         LEFT OUTER JOIN BMLakewood_Source.dbo.Traffic_Criminal_Disposition LWTCD WITH (NOLOCK) ON LWTCD.Case_Violation_Id = TCD.Case_Violation_Id AND TCD.SeqNbr = 1 --GBDI-815:Map from dbo.Traffif_Criminal_Disposition the BMV_Susp_Class_Id to tblCaseCharge.LicenseSuspendedCode field
+         LEFT OUTER JOIN tblLookup L WITH (NOLOCK) ON L.LookupGroup = 'LicenseSuspendedCode' AND L.LookupKey = LWTCD.BMV_Susp_Class_Id --GBDI-815:Map from dbo.Traffif_Criminal_Disposition the BMV_Susp_Class_Id to tblCaseCharge.LicenseSuspendedCode field
