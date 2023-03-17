@@ -22,13 +22,14 @@ int main() {
 
     //get file from user
     cout<<"File to convert:";
+    cout << "SQLQuery15.sql for testing\n";
     //cin >> fileName;       //commented out for testing
     fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.sql";
     //fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.txt";
 
     readFile(fileName, fileText);
 
-    cout <<"Enter name of table to UPDATE:";
+    //cout <<"Enter name of table to UPDATE:";
     //cin >> updateTable;       //commented out for testing
     updateTable = "tblCaseCharge";
 
@@ -39,7 +40,8 @@ int main() {
    for(int i=0; i<fileText.size(); i++){
         if(fileText[i] == "INSERT INTO " + updateTable || fileText[i] == "insert into " + updateTable || fileText[i] == "Insert into " + updateTable){
             mainInsert = i;
-            cout <<"MainInsert = " + mainInsert <<endl;
+            cout << "\nMainInsert : ";
+            cout <<  mainInsert <<endl;
             break;
         }
     }
@@ -47,7 +49,7 @@ int main() {
     for(int i=mainInsert; i<fileText.size(); i++){
         if(fileText[i]=="SELECT" || fileText[i]=="select" || fileText[i]=="Select"){
             mainSelect = i;
-            cout <<"MainSelect = " + mainSelect << endl;
+            cout << "MainSelect = " + mainSelect << endl;
             break;
         }
     }
