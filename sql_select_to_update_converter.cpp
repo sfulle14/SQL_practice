@@ -41,31 +41,7 @@ int main() {
     
     //should be 5 for test
     mainInsert = FindInsert(fileText,  updateTable);
-    /* 
-    for(int i=0; i<fileText.size(); i++){
-        if(fileText[i] == "INSERT INTO " + updateTable || fileText[i] == "insert into " + updateTable || fileText[i] == "Insert into " + updateTable){
-            mainInsert = i;
-            cout << "\nMainInsert: " <<  mainInsert <<endl;
-            break;
-        }
-    } */
 
-   
-
-    /* 
-    //defining regular expressions for searching
-    regex r("\\s+SELECT");
-    regex s("\\s+select");
-    regex t("\\s+Select");
-    smatch m;
-    for(int j=mainInsert; j<fileText.size(); j++){
-        if(regex_search(fileText[j], m, r) || regex_search(fileText[j], m, s) || regex_search(fileText[j], m, t)){
-            mainSelect = j;
-            cout << "MainSelect: " << mainSelect << endl;
-            break;
-        }
-    } 
-    */
     //should be 227 for test
     mainSelect = FindSelect(fileText, mainInsert);
     
@@ -75,6 +51,7 @@ int main() {
 }
 
 //Function to read the file to a vector of strings.
+//Takes the fileName as a value and the fileText as a value by reference.
 void readFile(string fileName, vector<string>& fileText){
     //declare local variables
     fstream fileIn; 
@@ -92,6 +69,8 @@ void readFile(string fileName, vector<string>& fileText){
     fileIn.close();
 }
 
+//Funciton to find the main INSERT of the sql file.
+//Takes the fileText and updateTable as values
 int FindInsert(vector<string> fileText, string updateTable){
     int mainInsert;
 
@@ -106,6 +85,8 @@ int FindInsert(vector<string> fileText, string updateTable){
     return mainInsert;
 }
 
+//Function to find the main SELECT of the sql file.
+//Takes the fileText and mainInsert as values.
 int FindSelect(vector<string> fileText, int mainInsert){
     int mainSelect;
 
@@ -126,7 +107,8 @@ int FindSelect(vector<string> fileText, int mainInsert){
     return mainSelect;
 }
 
-
+//Function to display what is in the sql file.
+//Takes the fileText as a value.
 void Display(vector<string> fileText){
     for(int i=0; i<fileText.size(); i++){
         cout <<fileText[i]<< endl;
