@@ -11,6 +11,8 @@ using namespace std;
 //function declaration
 void readFile(string fileName, vector<string>& fileText);
 void Display(vector<string> fileText);
+int FindInsert(vector<string> fileText, string updateTable);
+int FindSelect(vector<string> fileText, int mainInsert);
 
 int main() {
     //declare local variables
@@ -38,29 +40,35 @@ int main() {
     //Display(fileText);
     
     //should be 5 for test
+    mainInsert = FindInsert(fileText,  updateTable);
+    /* 
     for(int i=0; i<fileText.size(); i++){
         if(fileText[i] == "INSERT INTO " + updateTable || fileText[i] == "insert into " + updateTable || fileText[i] == "Insert into " + updateTable){
             mainInsert = i;
-            cout << "\nMainInsert : " <<  mainInsert <<endl;
+            cout << "\nMainInsert: " <<  mainInsert <<endl;
             break;
         }
-    }
+    } */
 
-   //defining regular expressions for searching
-   regex r("\\s+SELECT");
-   regex s("\\s+select");
-   regex t("\\s+Select");
-   smatch m;
+   
 
-    
-    //should be 227 for test
+    /* 
+    //defining regular expressions for searching
+    regex r("\\s+SELECT");
+    regex s("\\s+select");
+    regex t("\\s+Select");
+    smatch m;
     for(int j=mainInsert; j<fileText.size(); j++){
         if(regex_search(fileText[j], m, r) || regex_search(fileText[j], m, s) || regex_search(fileText[j], m, t)){
             mainSelect = j;
             cout << "MainSelect: " << mainSelect << endl;
             break;
         }
-    }
+    } 
+    */
+    //should be 227 for test
+    mainSelect = FindSelect(fileText, mainInsert);
+    
 
 
     return 0;
@@ -82,6 +90,40 @@ void readFile(string fileName, vector<string>& fileText){
         fileText.push_back(line);      
     }
     fileIn.close();
+}
+
+int FindInsert(vector<string> fileText, string updateTable){
+    int mainInsert;
+
+    for(int i=0; i<fileText.size(); i++){
+        if(fileText[i] == "INSERT INTO " + updateTable || fileText[i] == "insert into " + updateTable || fileText[i] == "Insert into " + updateTable){
+            mainInsert = i;
+            cout << "\nMainInsert: " <<  mainInsert <<endl;
+            break;
+        }
+    }
+
+    return mainInsert;
+}
+
+int FindSelect(vector<string> fileText, int mainInsert){
+    int mainSelect;
+
+    //defining regular expressions for searching
+    regex r("\\s+SELECT");
+    regex s("\\s+select");
+    regex t("\\s+Select");
+    smatch m;
+
+    for(int j=mainInsert; j<fileText.size(); j++){
+        if(regex_search(fileText[j], m, r) || regex_search(fileText[j], m, s) || regex_search(fileText[j], m, t)){
+            mainSelect = j;
+            cout << "MainSelect: " << mainSelect << endl;
+            break;
+        }
+    }
+
+    return mainSelect;
 }
 
 
