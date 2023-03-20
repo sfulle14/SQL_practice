@@ -168,22 +168,22 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
     //first one should be 228 for test file (SQLQuery15)
     for(int i=mainSelect; i<fileText.size(); i++){
         //loop to look for "AS"
-        if(regex_search(fileText[i], m, r)){            
+        if(regex_search(fileText[i], m, r) || regex_search(fileText[i], m, t) || regex_search(fileText[i], m, x)){            
             pos = m.position();        //find position of AS
             str1 = fileText[i].substr(0,pos);   //find first variable
-            str1 = str1.substr(str1.find_first_not_of(", \\n\\r\\t\\f\\v"));    //remove leading spaces and ,
+            str1 = str1.substr(str1.find_first_not_of(" ,\\n\\r\\t\\f\\v"));    //remove leading spaces and ,
             str2 = fileText[i].substr(pos+4);   //find start of second variable
 
-
-            if(str1.substr(0,2) == "--"){
-                continue;
-            }
             if(str2.find("--")){
                 str2 = str2.substr(0,str2.find("--"));
                 str2 = str2.substr(str2.find_first_not_of(", \\n\\r\\t\\f\\v"));
             }
-
-            if(count > 0){
+            
+            
+            if(str1.substr(0,2) == "--"){
+                str = "--," + str2 + " = " + str1;
+            }
+            else if(count > 0 && str1.substr(0,2) != "--"){
                 str = "," + str2 + " = " + str1;
             }
             else{
@@ -193,27 +193,6 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
             OutputSet(str, count, updateTable);
             count++;
         }
-        //loop to look for "as"
-        if(regex_search(fileText[i], m, t)){
-            pos = m.position();        //find position of as
-            str1 = fileText[i].substr(0,pos);   //find first variable
-            str1 = str1.substr(str1.find_first_not_of(", \\n\\r\\t\\f\\v"));    //remove leading spaces and ,
-            str2 = fileText[i].substr(pos+4);   //find start of second variable
-            
-            OutputSet(str, count, updateTable);
-            count++;
-        }
-        //loop to look for "As"
-        if(regex_search(fileText[i], m, x)){
-            pos = m.position();        //find position of As
-            str1 = fileText[i].substr(0,pos);   //find first variable
-            str1 = str1.substr(str1.find_first_not_of(", \\n\\r\\t\\f\\v"));    //remove leading spaces and ,
-            str2 = fileText[i].substr(pos+4);   //find start of second variable
-            
-            OutputSet(str, count, updateTable);
-            count++;
-        }
-
         lastAs = count + mainSelect;
     }
 }
