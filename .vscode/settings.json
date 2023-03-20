@@ -7,7 +7,8 @@
         "vector": "cpp",
         "fstream": "cpp",
         "string": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "regex": "cpp"
     },
     "cmake.configureOnOpen": true
 }

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <cassert>
+#include <regex>
 
 
 using namespace std;
@@ -21,7 +22,7 @@ int main() {
 
 
     //get file from user
-    cout<<"File to convert:";
+    cout<<"\nFile to convert:";
     cout << "SQLQuery15.sql for testing\n";
     //cin >> fileName;       //commented out for testing
     fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.sql";
@@ -36,20 +37,27 @@ int main() {
     //Display the test in file
     //Display(fileText);
     
-
-   for(int i=0; i<fileText.size(); i++){
+    //should be 5 for test
+    for(int i=0; i<fileText.size(); i++){
         if(fileText[i] == "INSERT INTO " + updateTable || fileText[i] == "insert into " + updateTable || fileText[i] == "Insert into " + updateTable){
             mainInsert = i;
-            cout << "\nMainInsert : ";
-            cout <<  mainInsert <<endl;
+            cout << "\nMainInsert : " <<  mainInsert <<endl;
             break;
         }
     }
 
-    for(int i=mainInsert; i<fileText.size(); i++){
-        if(fileText[i]=="SELECT" || fileText[i]=="select" || fileText[i]=="Select"){
-            mainSelect = i;
-            cout << "MainSelect = " + mainSelect << endl;
+   //defining regular expressions for searching
+   regex r("\\s+SELECT");
+   regex s("\\s+select");
+   regex t("\\s+Select");
+   smatch m;
+
+    
+    //should be 227 for test
+    for(int j=mainInsert; j<fileText.size(); j++){
+        if(regex_search(fileText[j], m, r) || regex_search(fileText[j], m, s) || regex_search(fileText[j], m, t)){
+            mainSelect = j;
+            cout << "MainSelect: " << mainSelect << endl;
             break;
         }
     }
