@@ -8,7 +8,8 @@
         "fstream": "cpp",
         "string": "cpp",
         "ostream": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "xiosbase": "cpp"
     },
     "cmake.configureOnOpen": true
 }

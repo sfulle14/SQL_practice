@@ -13,7 +13,8 @@ void readFile(string fileName, vector<string>& fileText);
 void Display(vector<string> fileText);
 int FindInsert(vector<string> fileText, string updateTable);
 int FindSelect(vector<string> fileText, int mainInsert);
-void FindVariables(int mainSelect, vector<string> fileText);
+void FindVariables(int mainSelect, vector<string> fileText, string updateTable);
+void Output(string str, int count, string updateTable);
 
 int main() {
     //declare local variables
@@ -47,7 +48,8 @@ int main() {
     mainSelect = FindSelect(fileText, mainInsert);
 
     //Function call to find the variables in each line.
-    FindVariables(mainSelect, fileText);
+    FindVariables(mainSelect, fileText, updateTable);
+
 
     return 0;
 }
@@ -73,13 +75,14 @@ void readFile(string fileName, vector<string>& fileText){
 
 //Funciton to find the main INSERT of the sql file.
 //Takes the fileText and updateTable as values
+//This funciton currently works with 3 INSERT INTOs: INSERT INTO, insert into, Insert Into.
 int FindInsert(vector<string> fileText, string updateTable){
     int mainInsert;
 
     for(int i=0; i<fileText.size(); i++){
         if(fileText[i] == "INSERT INTO " + updateTable || fileText[i] == "insert into " + updateTable || fileText[i] == "Insert into " + updateTable){
             mainInsert = i;
-            cout << "\nMainInsert: " <<  mainInsert <<endl;
+            //cout << "\nMainInsert: " <<  mainInsert <<endl;
             break;
         }
     }
@@ -89,6 +92,7 @@ int FindInsert(vector<string> fileText, string updateTable){
 
 //Function to find the main SELECT of the sql file.
 //Takes the fileText and mainInsert as values.
+//This funciton currently works with 3 selects: SELECT, Select, select.
 int FindSelect(vector<string> fileText, int mainInsert){
     int mainSelect;
 
@@ -101,7 +105,7 @@ int FindSelect(vector<string> fileText, int mainInsert){
     for(int j=mainInsert; j<fileText.size(); j++){
         if(regex_search(fileText[j], m, r) || regex_search(fileText[j], m, s) || regex_search(fileText[j], m, t)){
             mainSelect = j;
-            cout << "MainSelect: " << mainSelect << endl;
+            //cout << "MainSelect: " << mainSelect << endl;
             break;
         }
     }
@@ -110,61 +114,100 @@ int FindSelect(vector<string> fileText, int mainInsert){
 }
 
 //This function is uses to find the different variables in each line.
-//the lines must me formated as var1 AS var2
-void FindVariables(int mainSelect, vector<string> fileText){
+//The lines must me formated as var1 AS var2.
+//This funciton currently works with 3 versions of AS: AS, As, as.
+void FindVariables(int mainSelect, vector<string> fileText, string updateTable){
+    //regex expressions needed to find variables
     regex r("\\s+AS");
     regex s("\\s+");
     regex t("\\s+as");
     regex x("\\s+As");
+    regex z("\\,");
     smatch m;
 
+    //variable declarations
     string str1;
     string str2;
+    string str;
     int pos;
+    int count = 0;
     
 
+    //Loop to go over all lines in the file and split the lines up.
     //first one should be 228 for test file (SQLQuery15)
     for(int i=mainSelect; i<fileText.size(); i++){
-        if(regex_search(fileText[i], m, r)){
-            cout << fileText[i] << endl;
-            cout << i << endl;
-
+        //loop to look for "AS"
+        if(regex_search(fileText[i], m, r)){            
             pos = fileText[i].find("AS");        //find position of AS
-            cout << "POS:" << pos << endl;
             str1 = fileText[i].substr(0,pos);   //find first variable
             str1 = regex_replace(str1,s, "");   //remove blank spaces
-            cout << str1 << endl;
+            str1 = regex_replace(str1,z, "");   //remove , 
             str2 = fileText[i].substr(pos+2);   //find second variable
             str2 = regex_replace(str2,s, "");   //remove blank spaces
-            break;
+
+            if(count > 0){
+                str = "," + str2 + " = " + str1;
+            }
+            else{
+                str = str2 + " = " + str1;
+            }
+
+            Output(str, count, updateTable);
+            count++;
         }
+        //loop to look for "as"
         if(regex_search(fileText[i], m, t)){
-            cout << fileText[i] << endl;
-            cout << i << endl;
-
             pos = fileText[i].find("as");        //find position of AS
-            cout << "POS:" << pos << endl;
             str1 = fileText[i].substr(0,pos);   //find first variable
             str1 = regex_replace(str1,s, "");   //remove blank spaces
-            cout << str1 << endl;
+            str1 = regex_replace(str1,z, "");   //remove , 
             str2 = fileText[i].substr(pos+2);   //find second variable
             str2 = regex_replace(str2,s, "");   //remove blank spaces
-            break;
+            
+            Output(str, count, updateTable);
+            count++;
         }
+        //loop to look for "As"
         if(regex_search(fileText[i], m, x)){
-            cout << fileText[i] << endl;
-            cout << i << endl;
-
             pos = fileText[i].find("As");        //find position of AS
-            cout << "POS:" << pos << endl;
             str1 = fileText[i].substr(0,pos);   //find first variable
             str1 = regex_replace(str1,s, "");   //remove blank spaces
-            cout << str1 << endl;
+            str1 = regex_replace(str1,z, "");   //remove , 
             str2 = fileText[i].substr(pos+2);   //find second variable
             str2 = regex_replace(str2,s, "");   //remove blank spaces
-            break;
+            
+            Output(str, count, updateTable);
+            count++;
         }
     }
+}
+
+void Output(string str, int count, string updateTable){
+    string outputFileName;
+    fstream fileOut;
+    outputFileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\testOutput.sql";
+
+    //cout << "Enter file to write to:";
+    //cin >>  outputFileName;
+
+    
+
+    if(count == 0){
+        fileOut.open(outputFileName, ios::out | ios::trunc);
+        fileOut.close();
+
+        fileOut.open(outputFileName, ios::app);
+        fileOut << "UPDATE " << updateTable << endl;
+        fileOut << "SET" << endl;
+        fileOut << str << endl;
+        fileOut.close();
+    }
+    else{
+        fileOut.open(outputFileName, ios::app);
+        fileOut << str << endl;
+        fileOut.close();
+    }
+
 }
 
 //Function to display what is in the sql file.
