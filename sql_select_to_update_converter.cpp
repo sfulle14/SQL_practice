@@ -13,9 +13,10 @@ void readFile(string fileName, vector<string>& fileText);
 void Display(vector<string> fileText);
 int FindInsert(vector<string> fileText, string updateTable);
 int FindSelect(vector<string> fileText, int mainInsert);
-void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable);
-void Output(string str, int count, string updateTable);
-int FindFrom(vector<string> fileText, int mainSelect);
+void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, int& lastAs);
+void OutputSet(string str, int count, string updateTable);
+int FindFrom(vector<string> fileText, int lastAs);
+void OutputJoin(int fromLocation, vector<string> fileText);
 
 int main() {
     //declare local variables
@@ -24,6 +25,7 @@ int main() {
     int mainInsert;
     int mainSelect;
     int fromLocation;
+    int lastAs;
     string updateTable;
 
 
@@ -50,10 +52,13 @@ int main() {
     mainSelect = FindSelect(fileText, mainInsert);
 
     //Function call to find the variables in each line.
-    VariablesSwap(mainSelect, fileText, updateTable);
+    VariablesSwap(mainSelect, fileText, updateTable, lastAs);
 
-    fromLocation = FindFrom(fileText, mainSelect);
+    //Function call to find the location of the FROM keyword.
+    fromLocation = FindFrom(fileText, lastAs);
 
+    //Funciton call to output rest of text to file
+    OutputJoin(fromLocation,fileText);
 
     return 0;
 }
@@ -97,7 +102,7 @@ int FindInsert(vector<string> fileText, string updateTable){
 //Functino to find the main FROm of the sql file.
 //Takes fileText and mainSelect as inputs.
 //This function currently works with 3 Froms: FROM, From, and from.
-int FindFrom(vector<string> fileText, int mainSelect){
+int FindFrom(vector<string> fileText, int lastAs){
     //defining local variables
     int fromLocation;
 
@@ -108,11 +113,9 @@ int FindFrom(vector<string> fileText, int mainSelect){
     smatch m;
 
     //should be 452 for test file (SQLQuery15)
-    for(int i=fileText.size(); i>mainSelect; i--){
+    for(int i=lastAs+1; i<fileText.size(); i++){
         if(regex_search(fileText[i], m, r) || regex_search(fileText[i], m, s) || regex_search(fileText[i], m, t)){
             fromLocation = i;
-            cout << "From Location: " << fromLocation << endl;
-            cout << fileText[i] << endl;
             break;
         }
     }
@@ -146,7 +149,7 @@ int FindSelect(vector<string> fileText, int mainInsert){
 //This function is uses to find and swap the location of the variables. 
 //Takes mainSelect, fileText, updateTable as inputs.
 //This funciton currently works with 3 versions of AS: AS, As, as.
-void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable){
+void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, int& lastAs){
     //regex expressions needed to find variables
     regex r("(?:^|\\W\\b)AS(?:$|\\W\\b)");
     regex t("(?:^|\\W\\b)as(?:$|\\W\\b)");
@@ -159,6 +162,7 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable){
     string str;
     int pos;
     int count = 0;
+    
     
     //Loop to go over all lines in the file and split the lines up.
     //first one should be 228 for test file (SQLQuery15)
@@ -177,7 +181,7 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable){
                 str = str2 + " = " + str1;
             }
 
-            Output(str, count, updateTable);
+            OutputSet(str, count, updateTable);
             count++;
         }
         //loop to look for "as"
@@ -187,7 +191,7 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable){
             str1 = str1.substr(str1.find_first_not_of(", \\n\\r\\t\\f\\v"));    //remove leading spaces and ,
             str2 = fileText[i].substr(pos+4);   //find start of second variable
             
-            Output(str, count, updateTable);
+            OutputSet(str, count, updateTable);
             count++;
         }
         //loop to look for "As"
@@ -197,13 +201,17 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable){
             str1 = str1.substr(str1.find_first_not_of(", \\n\\r\\t\\f\\v"));    //remove leading spaces and ,
             str2 = fileText[i].substr(pos+4);   //find start of second variable
             
-            Output(str, count, updateTable);
+            OutputSet(str, count, updateTable);
             count++;
         }
+
+        lastAs = count + mainSelect;
     }
 }
 
-void Output(string str, int count, string updateTable){
+//This funciton outputs the data to a file.
+//Takes str, count, and updatetable as inputs.
+void OutputSet(string str, int count, string updateTable){
     string outputFileName;
     fstream fileOut;
     outputFileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\testOutput.sql";
@@ -229,6 +237,24 @@ void Output(string str, int count, string updateTable){
         fileOut.close();
     }
 
+}
+
+//This funciton outputs all the joins and other exclutionary statements to the file.
+//Takes fromLocation and fileText as inputs.
+void OutputJoin(int fromLocation, vector<string> fileText){
+    string outputFileName;
+    fstream fileOut;
+    outputFileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\testOutput.sql";
+
+    //cout << "Enter file to write to:";
+    //cin >>  outputFileName;
+
+    fileOut.open(outputFileName, ios::app);
+    for(int i=fromLocation; i<fileText.size();i++){
+        fileOut << fileText[i] << endl;
+    }
+
+    fileOut.close();
 }
 
 //Function to display what is in the sql file.
