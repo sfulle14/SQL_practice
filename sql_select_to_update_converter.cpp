@@ -13,8 +13,9 @@ void readFile(string fileName, vector<string>& fileText);
 void Display(vector<string> fileText);
 int FindInsert(vector<string> fileText, string updateTable);
 int FindSelect(vector<string> fileText, int mainInsert);
-void FindVariables(int mainSelect, vector<string> fileText, string updateTable);
+void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable);
 void Output(string str, int count, string updateTable);
+int FindFrom(vector<string> fileText, int mainSelect);
 
 int main() {
     //declare local variables
@@ -22,6 +23,7 @@ int main() {
     vector<string> fileText;
     int mainInsert;
     int mainSelect;
+    int fromLocation;
     string updateTable;
 
 
@@ -48,14 +50,16 @@ int main() {
     mainSelect = FindSelect(fileText, mainInsert);
 
     //Function call to find the variables in each line.
-    FindVariables(mainSelect, fileText, updateTable);
+    VariablesSwap(mainSelect, fileText, updateTable);
+
+    fromLocation = FindFrom(fileText, mainSelect);
 
 
     return 0;
 }
 
 //Function to read the file to a vector of strings.
-//Takes the fileName as a value and the fileText as a value by reference.
+//Takes the fileName as a inputs and the fileText as a inputs by reference.
 void readFile(string fileName, vector<string>& fileText){
     //declare local variables
     fstream fileIn; 
@@ -74,7 +78,7 @@ void readFile(string fileName, vector<string>& fileText){
 }
 
 //Funciton to find the main INSERT of the sql file.
-//Takes the fileText and updateTable as values
+//Takes the fileText and updateTable as inputs.
 //This funciton currently works with 3 INSERT INTOs: INSERT INTO, insert into, Insert Into.
 int FindInsert(vector<string> fileText, string updateTable){
     int mainInsert;
@@ -90,8 +94,34 @@ int FindInsert(vector<string> fileText, string updateTable){
     return mainInsert;
 }
 
+//Functino to find the main FROm of the sql file.
+//Takes fileText and mainSelect as inputs.
+//This function currently works with 3 Froms: FROM, From, and from.
+int FindFrom(vector<string> fileText, int mainSelect){
+    //defining local variables
+    int fromLocation;
+
+    //defining regular expressions for searching
+    regex r("(?:^|\\W\\b)FROM(?:$|\\W\\b)");
+    regex s("(?:^|\\W\\b)from(?:$|\\W\\b)");
+    regex t("(?:^|\\W\\b)From(?:$|\\W\\b)");
+    smatch m;
+
+    //should be 452 for test file (SQLQuery15)
+    for(int i=fileText.size(); i>mainSelect; i--){
+        if(regex_search(fileText[i], m, r) || regex_search(fileText[i], m, s) || regex_search(fileText[i], m, t)){
+            fromLocation = i;
+            cout << "From Location: " << fromLocation << endl;
+            cout << fileText[i] << endl;
+            break;
+        }
+    }
+
+    return fromLocation;
+}
+
 //Function to find the main SELECT of the sql file.
-//Takes the fileText and mainInsert as values.
+//Takes the fileText and mainInsert as inputs.
 //This funciton currently works with 3 selects: SELECT, Select, select.
 int FindSelect(vector<string> fileText, int mainInsert){
     int mainSelect;
@@ -113,15 +143,14 @@ int FindSelect(vector<string> fileText, int mainInsert){
     return mainSelect;
 }
 
-//This function is uses to find the different variables in each line.
-//The lines must me formated as var1 AS var2.
+//This function is uses to find and swap the location of the variables. 
+//Takes mainSelect, fileText, updateTable as inputs.
 //This funciton currently works with 3 versions of AS: AS, As, as.
-void FindVariables(int mainSelect, vector<string> fileText, string updateTable){
+void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable){
     //regex expressions needed to find variables
     regex r("(?:^|\\W\\b)AS(?:$|\\W\\b)");
     regex t("(?:^|\\W\\b)as(?:$|\\W\\b)");
     regex x("(?:^|\\W\\b)As(?:$|\\W\\b)");
-
     smatch m;
 
     //variable declarations
@@ -131,7 +160,6 @@ void FindVariables(int mainSelect, vector<string> fileText, string updateTable){
     int pos;
     int count = 0;
     
-
     //Loop to go over all lines in the file and split the lines up.
     //first one should be 228 for test file (SQLQuery15)
     for(int i=mainSelect; i<fileText.size(); i++){
