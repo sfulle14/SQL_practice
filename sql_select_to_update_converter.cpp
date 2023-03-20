@@ -174,10 +174,12 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
             str1 = str1.substr(str1.find_first_not_of(" ,\\n\\r\\t\\f\\v"));    //remove leading spaces and ,
             str2 = fileText[i].substr(pos+4);   //find start of second variable
 
-            if(str2.find("--")){
+            if(str2.find("--")){ 
                 str2 = str2.substr(0,str2.find("--"));
                 str2 = str2.substr(str2.find_first_not_of(", \\n\\r\\t\\f\\v"));
             }
+
+            
             
             
             if(str1.substr(0,2) == "--"){
