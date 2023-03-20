@@ -118,11 +118,10 @@ int FindSelect(vector<string> fileText, int mainInsert){
 //This funciton currently works with 3 versions of AS: AS, As, as.
 void FindVariables(int mainSelect, vector<string> fileText, string updateTable){
     //regex expressions needed to find variables
-    regex r("\\s+AS");
-    regex s("\\s+");
-    regex t("\\s+as");
-    regex x("\\s+As");
-    regex z("\\,");
+    regex r("(?:^|\\W\\b)AS(?:$|\\W\\b)");
+    regex t("(?:^|\\W\\b)as(?:$|\\W\\b)");
+    regex x("(?:^|\\W\\b)As(?:$|\\W\\b)");
+
     smatch m;
 
     //variable declarations
@@ -138,12 +137,10 @@ void FindVariables(int mainSelect, vector<string> fileText, string updateTable){
     for(int i=mainSelect; i<fileText.size(); i++){
         //loop to look for "AS"
         if(regex_search(fileText[i], m, r)){            
-            pos = fileText[i].find("AS");        //find position of AS
+            pos = m.position();        //find position of AS
             str1 = fileText[i].substr(0,pos);   //find first variable
-            str1 = regex_replace(str1,s, "");   //remove blank spaces
-            str1 = regex_replace(str1,z, "");   //remove , 
-            str2 = fileText[i].substr(pos+2);   //find second variable
-            str2 = regex_replace(str2,s, "");   //remove blank spaces
+            str1 = str1.substr(str1.find_first_not_of(", \\n\\r\\t\\f\\v"));    //remove leading spaces and ,
+            str2 = fileText[i].substr(pos+4);   //find start of second variable
 
             if(count > 0){
                 str = "," + str2 + " = " + str1;
@@ -157,24 +154,20 @@ void FindVariables(int mainSelect, vector<string> fileText, string updateTable){
         }
         //loop to look for "as"
         if(regex_search(fileText[i], m, t)){
-            pos = fileText[i].find("as");        //find position of AS
+            pos = m.position();        //find position of as
             str1 = fileText[i].substr(0,pos);   //find first variable
-            str1 = regex_replace(str1,s, "");   //remove blank spaces
-            str1 = regex_replace(str1,z, "");   //remove , 
-            str2 = fileText[i].substr(pos+2);   //find second variable
-            str2 = regex_replace(str2,s, "");   //remove blank spaces
+            str1 = str1.substr(str1.find_first_not_of(", \\n\\r\\t\\f\\v"));    //remove leading spaces and ,
+            str2 = fileText[i].substr(pos+4);   //find start of second variable
             
             Output(str, count, updateTable);
             count++;
         }
         //loop to look for "As"
         if(regex_search(fileText[i], m, x)){
-            pos = fileText[i].find("As");        //find position of AS
+            pos = m.position();        //find position of As
             str1 = fileText[i].substr(0,pos);   //find first variable
-            str1 = regex_replace(str1,s, "");   //remove blank spaces
-            str1 = regex_replace(str1,z, "");   //remove , 
-            str2 = fileText[i].substr(pos+2);   //find second variable
-            str2 = regex_replace(str2,s, "");   //remove blank spaces
+            str1 = str1.substr(str1.find_first_not_of(", \\n\\r\\t\\f\\v"));    //remove leading spaces and ,
+            str2 = fileText[i].substr(pos+4);   //find start of second variable
             
             Output(str, count, updateTable);
             count++;
