@@ -48,13 +48,13 @@ int main() {
 
     //get file from user
     cout<<"\nFile to convert:";
-    cin >> fileName;       //commented out for testing
+    cin >> fileName;       
 
 
     readFile(fileName, fileText);
 
     cout <<"Enter name of table to UPDATE:";
-    cin >> updateTable;       //commented out for testing
+    cin >> updateTable;      
 
     //Display the test in file
     //Display(fileText);
