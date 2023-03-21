@@ -108,6 +108,7 @@ void readFile(string fileName, vector<string>& fileText){
 int FindInsert(vector<string> fileText, string updateTable){
     int mainInsert;
 
+    //Finding the location of the main INSERT INTO row.
     for(int i=0; i<fileText.size(); i++){
         if(fileText[i] == "INSERT INTO " + updateTable || fileText[i] == "insert into " + updateTable || fileText[i] == "Insert into " + updateTable){
             mainInsert = i;
@@ -131,7 +132,7 @@ int FindFrom(vector<string> fileText, int lastAs){
     regex t("(?:^|\\W\\b)From(?:$|\\W\\b)");
     smatch m;
 
-    //should be 452 for test file (SQLQuery15)
+    /finds the location of the main FROM row.
     for(int i=lastAs+1; i<fileText.size(); i++){
         if(regex_search(fileText[i], m, r) || regex_search(fileText[i], m, s) || regex_search(fileText[i], m, t)){
             fromLocation = i;
@@ -154,6 +155,7 @@ int FindSelect(vector<string> fileText, int mainInsert){
     regex t("\\s+Select");
     smatch m;
 
+    //Finding the location of the main SELECT row.
     for(int j=mainInsert; j<fileText.size(); j++){
         if(regex_search(fileText[j], m, r) || regex_search(fileText[j], m, s) || regex_search(fileText[j], m, t)){
             mainSelect = j;
