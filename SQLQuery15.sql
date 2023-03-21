@@ -279,7 +279,7 @@ INSERT INTO tblCaseCharge
         ,ISNULL(TCD.Date_Of_Sentence,CS.Date_Of_Sentence) AS CourtDecisionDate
         ,CASE WHEN ISNULL(LTRIM(RTRIM(SNT.Sentence_Code)),'') > '' THEN LTRIM(RTRIM(SNT.Sentence_Code)) ELSE CONVERT(VARCHAR(50),SNT.Sentence_Id) END AS CourtActionTaken
         ,LTRIM(RTRIM(PSNT.Plea_Code)) AS CourtFinalPlea
-     --,CONVERT(VARCHAR(50),PSNT.Plea_Id) AS CourtFinalPlea
+        --,CONVERT(VARCHAR(50),PSNT.Plea_Id) AS CourtFinalPlea
         ,ISNULL(TCD.Date_Final_Plea,CS.Date_Of_Sentence) AS CourtFinalPleaEnteredDate
         ,CASE WHEN SSNT.StatuteID = S.StatuteID THEN ISNULL(LTRIM(RTRIM(CV.Case_Violation_Description)),ISNULL(SSNT.StatuteLongDescription,'')) ELSE ISNULL(SSNT.StatuteLongDescription,'') END AS CourtStatuteDescription
         ,CASE ISNULL(SUBSTRING(LTRIM(RTRIM(DOVSNT.Degree)),1,1),'') WHEN 'U' THEN 'F' ELSE ISNULL(SUBSTRING(LTRIM(RTRIM(DOVSNT.Degree)),1,1),'') END AS CourtChargeLevel
@@ -341,7 +341,7 @@ INSERT INTO tblCaseCharge
         ,0 AS OBTSCommunityControlYears
         ,0 AS OBTSCommunityControlMonths
         ,0 AS OBTSCommunityControlDays
-		,CASE WHEN ISNULL(CS.License_Suspension_Days,0) > 0 THEN '1' END AS DLActionCode	 --GBDI-755: Source: dbo.Case_Sentences: Remove Driving_Privledges & BMV_Points fields from latest tblCaseCharge Conversion Logic
+        ,CASE WHEN ISNULL(CS.License_Suspension_Days,0) > 0 THEN '1' END AS DLActionCode	 --GBDI-755: Source: dbo.Case_Sentences: Remove Driving_Privledges & BMV_Points fields from latest tblCaseCharge Conversion Logic
         --,CASE WHEN ISNULL(CS.License_Suspension_Days,0) > 0 THEN '1' WHEN ISNULL(CS.Driving_Privledges,0) > 0 THEN '2' ELSE '0' END AS DLActionCode 
         ,L.Code AS LicenseSuspendedCode	--GBDI-815:Map from dbo.Traffif_Criminal_Disposition the BMV_Susp_Class_Id to tblCaseCharge.LicenseSuspendedCode field
         ,0 AS LicenseSuspendedYears
@@ -435,7 +435,7 @@ INSERT INTO tblCaseCharge
         ,0 AS DirectFiling
         ,0 AS RestitutionAmountSentencing
         ,ISNULL(LTRIM(RTRIM(TCC.Incident_Number)),'') AS ComplaintNumber
-		,ISNULL(TCD.Points_Assessed,0) AS ChargePoints		--GBDI-755: Source: dbo.Case_Sentences: Remove Driving_Privledges & BMV_Points fields from latest tblCaseCharge Conversion Logic
+        ,ISNULL(TCD.Points_Assessed,0) AS ChargePoints		--GBDI-755: Source: dbo.Case_Sentences: Remove Driving_Privledges & BMV_Points fields from latest tblCaseCharge Conversion Logic
         --,CASE WHEN ISNULL(TCD.Points_Assessed,0) > 0 THEN TCD.Points_Assessed ELSE ISNULL(CS.BMV_Points,0) END AS ChargePoints
         ,CS.License_Suspension_From AS DLSuspensionStartDate
         ,CS.License_Suspension_To AS DLSuspensionEndDate

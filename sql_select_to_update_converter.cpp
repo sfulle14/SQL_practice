@@ -1,3 +1,10 @@
+/*
+SQl INSERT INTO() SELECT() script to UPDATE script converter
+Created By: Steven Fuller
+Create Date: 3/17/2023
+
+*/
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -162,7 +169,6 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
     //variable declarations
     string str1;
     string str2;
-    string str3;
     string str;
     int pos;
     int count = 0;
@@ -172,23 +178,10 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
     //first one should be 228 for test file (SQLQuery15)
     for(int i=mainSelect; i<fileText.size(); i++){
         if(regex_search(fileText[i], m, r) || regex_search(fileText[i], m, t) || regex_search(fileText[i], m, x)){            
-            pos = m.position();                                                 //find position of AS
-            str1 = fileText[i].substr(0,pos);                                   //find first variable
-            cout << "str1.1: " << str1 << endl;
-            str3 = fileText[i].substr(0,pos);
+            pos = m.position();     //find position of AS
+            str1 = fileText[i].substr(0,pos);     //find first variable and remove leading spaces and ,
             str1 = str1.substr(str1.find_first_not_of(" ,\\n\\r\\t\\f\\v"));    //remove leading spaces and ,
-            cout << "str1.2: " << str1 << endl;
             str2 = fileText[i].substr(pos+4);                                   //find start of second variable
-
-            cout << "str3.1: " << str3 << endl;
-            cout << "str1.3: " << str1 << endl;
-            str3 = str3.substr(str3.find_first_not_of(" -,\\n\\r\\t\\f\\v"));
-            cout << "str3.2: " << str3 << endl;
-            cout << "Count: " << count << endl;
-
-            if(count == 210){
-                break;
-            }
 
             if(str2.find("--")){ 
                 str2 = str2.substr(0,str2.find("--"));
@@ -198,10 +191,6 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
             
             if(str1.substr(0,2) == "--"){
                 str = "--," + str2 + " = " + str1;
-            }
-            else if(count > 0 && str2.find("--")){
-                str1 = str3.substr(str3.find_first_not_of(" ,\\n\\r\\t\\f\\v")); 
-                str = "," + str2 + " = " + str1;
             }
             else if(count > 0 && str1.substr(0,2) != "--"){
                 str = "," + str2 + " = " + str1;

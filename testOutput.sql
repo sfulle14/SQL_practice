@@ -1,3 +1,8 @@
+;WITH BOND_SETUP_cte AS
+      (SELECT BSET.Case_Violation_Id
+             ,CASE WHEN ISNULL(BSET.Bond_Value,0) > 0 THEN BSET.Bond_Value ELSE ISNULL(BSET.Bond_Fee,0) END BondAmount
+             ,ROW_NUMBER() OVER(PARTITION BY BSET.Case_Violation_Id ORDER BY BSET.Date_Bond_Setup DESC) AS SeqNbr
+         FROM BMLakewood_Source.dbo.Bond_Setups BSET WITH (NOLOCK))
 UPDATE tblCaseCharge
 SET
 CaseID = C.CaseID
@@ -115,7 +120,7 @@ CaseID = C.CaseID
 ,OBTSCommunityControlYears = 0
 ,OBTSCommunityControlMonths = 0
 ,OBTSCommunityControlDays = 0
-,DLActionCode	  = 		,CASE WHEN ISNULL(CS.License_Suspension_Days,0) > 0 THEN '1' END
+,DLActionCode	  = CASE WHEN ISNULL(CS.License_Suspension_Days,0) > 0 THEN '1' END
 --,DLActionCode  = --,CASE WHEN ISNULL(CS.License_Suspension_Days,0) > 0 THEN '1' WHEN ISNULL(CS.Driving_Privledges,0) > 0 THEN '2' ELSE '0' END
 ,LicenseSuspendedCode	 = L.Code
 ,LicenseSuspendedYears = 0
@@ -209,7 +214,21 @@ CaseID = C.CaseID
 ,DirectFiling = 0
 ,RestitutionAmountSentencing = 0
 ,ComplaintNumber = ISNULL(LTRIM(RTRIM(TCC.Incident_Number)),'')
-,ChargePoints		 = 		,ISNULL(TCD.Points_Assessed,0)
+,ChargePoints		 = ISNULL(TCD.Points_Assessed,0)
+--,ChargePoints = --,CASE WHEN ISNULL(TCD.Points_Assessed,0) > 0 THEN TCD.Points_Assessed ELSE ISNULL(CS.BMV_Points,0) END
+,DLSuspensionStartDate = CS.License_Suspension_From
+,DLSuspensionEndDate = CS.License_Suspension_To
+,DLModifySuspensionStartDate = NULL
+,DLModifySuspensionEndDate = NULL
+,DLModificationCode = ''
+,CourtStatuteModifiedReason = ''
+,InitialEssentialFacts = ''
+,ProsecutorEssentialFacts = ''
+,CourtEssentialFacts = ''
+,InitialEssentialFactID = 0
+,ProsecutorEssentialFactID = 0
+,CourtEssentialFactID = 0
+,ProbationEndDate = C.ProbationEndDate
     FROM BMLakewood_Source.dbo.Case_Violations CV WITH (NOLOCK)
          INNER JOIN BMLakewood_Source.dbo.Traffic_Criminal_Cases TCC WITH (NOLOCK) ON TCC.Case_Number = CV.Case_Number
          INNER JOIN tblCase C WITH (NOLOCK) ON C.CaseNumber = CV.Case_Number
