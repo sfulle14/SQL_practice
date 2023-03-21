@@ -9,7 +9,8 @@
         "string": "cpp",
         "ostream": "cpp",
         "regex": "cpp",
-        "xiosbase": "cpp"
+        "xiosbase": "cpp",
+        "cassert": "cpp"
     },
     "cmake.configureOnOpen": true
 }

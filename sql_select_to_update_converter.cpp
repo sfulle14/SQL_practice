@@ -13,6 +13,7 @@ void readFile(string fileName, vector<string>& fileText);
 void Display(vector<string> fileText);
 int FindInsert(vector<string> fileText, string updateTable);
 int FindSelect(vector<string> fileText, int mainInsert);
+void OutputHead(vector<string> fileText, int mainInsert);
 void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, int& lastAs);
 void OutputSet(string str, int count, string updateTable);
 int FindFrom(vector<string> fileText, int lastAs);
@@ -33,7 +34,7 @@ int main() {
     cout<<"\nFile to convert:";
     cout << "SQLQuery15.sql for testing\n";
     //cin >> fileName;       //commented out for testing
-    fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.sql";
+    fileName = "/Users/stevenfuller/github/SQL_practice/SQLQuery15.sql";
     //fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.txt";
 
     readFile(fileName, fileText);
@@ -50,6 +51,8 @@ int main() {
 
     //should be 227 for test file (SQLQuery15)
     mainSelect = FindSelect(fileText, mainInsert);
+
+    OutputHead(fileText, mainInsert);
 
     //Function call to find the variables in each line.
     VariablesSwap(mainSelect, fileText, updateTable, lastAs);
@@ -159,6 +162,7 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
     //variable declarations
     string str1;
     string str2;
+    string str3;
     string str;
     int pos;
     int count = 0;
@@ -170,8 +174,21 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
         if(regex_search(fileText[i], m, r) || regex_search(fileText[i], m, t) || regex_search(fileText[i], m, x)){            
             pos = m.position();                                                 //find position of AS
             str1 = fileText[i].substr(0,pos);                                   //find first variable
+            cout << "str1.1: " << str1 << endl;
+            str3 = fileText[i].substr(0,pos);
             str1 = str1.substr(str1.find_first_not_of(" ,\\n\\r\\t\\f\\v"));    //remove leading spaces and ,
+            cout << "str1.2: " << str1 << endl;
             str2 = fileText[i].substr(pos+4);                                   //find start of second variable
+
+            cout << "str3.1: " << str3 << endl;
+            cout << "str1.3: " << str1 << endl;
+            str3 = str3.substr(str3.find_first_not_of(" -,\\n\\r\\t\\f\\v"));
+            cout << "str3.2: " << str3 << endl;
+            cout << "Count: " << count << endl;
+
+            if(count == 210){
+                break;
+            }
 
             if(str2.find("--")){ 
                 str2 = str2.substr(0,str2.find("--"));
@@ -181,6 +198,10 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
             
             if(str1.substr(0,2) == "--"){
                 str = "--," + str2 + " = " + str1;
+            }
+            else if(count > 0 && str2.find("--")){
+                str1 = str3.substr(str3.find_first_not_of(" ,\\n\\r\\t\\f\\v")); 
+                str = "," + str2 + " = " + str1;
             }
             else if(count > 0 && str1.substr(0,2) != "--"){
                 str = "," + str2 + " = " + str1;
@@ -196,12 +217,29 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
     }
 }
 
+void OutputHead(vector<string> fileText, int mainInsert){
+    string outputFileName;
+    fstream fileOut;
+    outputFileName = "/Users/stevenfuller/github/SQL_practice/testOutput.sql";
+
+    fileOut.open(outputFileName, ios::out | ios::trunc);
+    fileOut.close();
+
+    fileOut.open(outputFileName, ios::app);
+
+    for(int i=0; i<mainInsert; i++){
+        fileOut << fileText[i] << endl;
+    }
+
+    fileOut.close();
+}
+
 //This funciton outputs the data to a file.
 //Takes str, count, and updatetable as inputs.
 void OutputSet(string str, int count, string updateTable){
     string outputFileName;
     fstream fileOut;
-    outputFileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\testOutput.sql";
+    outputFileName = "/Users/stevenfuller/github/SQL_practice/testOutput.sql";
 
     //cout << "Enter file to write to:";
     //cin >>  outputFileName;
@@ -209,9 +247,6 @@ void OutputSet(string str, int count, string updateTable){
     
 
     if(count == 0){
-        fileOut.open(outputFileName, ios::out | ios::trunc);
-        fileOut.close();
-
         fileOut.open(outputFileName, ios::app);
         fileOut << "UPDATE " << updateTable << endl;
         fileOut << "SET" << endl;
@@ -231,7 +266,7 @@ void OutputSet(string str, int count, string updateTable){
 void OutputJoin(int fromLocation, vector<string> fileText){
     string outputFileName;
     fstream fileOut;
-    outputFileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\testOutput.sql";
+    outputFileName = "/Users/stevenfuller/github/SQL_practice/testOutput.sql";
 
     //cout << "Enter file to write to:";
     //cin >>  outputFileName;
