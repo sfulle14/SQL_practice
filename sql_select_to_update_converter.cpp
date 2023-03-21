@@ -1,8 +1,16 @@
 /*
 SQl INSERT INTO() SELECT() script to UPDATE script converter
+Description: This program will take a sql or text document and convert that data from a INSERT INTO() SELECT() script to an UPDATE script.
+The INSERT INTO can currently be formatted as: "INSERT INTO", "Insert Into", or "insert into".
+The SELECT can currently be formatted as: "SELECT", "Select", or "select".
+The AS can currently be formatted as: "AS", "As",or "as".
+
+It will include any cte tables or temp tables created before the INSERT INTO.
+It will also include any joins, ordering claused, or exclusionary clauses after the SELECT.
+
 Created By: Steven Fuller
 Create Date: 3/17/2023
-
+Version : 1.0 3/21/2023
 */
 
 #include <iostream>
@@ -20,15 +28,16 @@ void readFile(string fileName, vector<string>& fileText);
 void Display(vector<string> fileText);
 int FindInsert(vector<string> fileText, string updateTable);
 int FindSelect(vector<string> fileText, int mainInsert);
-void OutputHead(vector<string> fileText, int mainInsert);
-void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, int& lastAs);
-void OutputSet(string str, int count, string updateTable);
+void OutputHead(vector<string> fileText, int mainInsert, string outputFileName);
+void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, int& lastAs, string outputFileName);
+void OutputSet(string str, int count, string updateTable, string outputFileName);
 int FindFrom(vector<string> fileText, int lastAs);
-void OutputJoin(int fromLocation, vector<string> fileText);
+void OutputJoin(int fromLocation, vector<string> fileText, string outputFileName);
 
 int main() {
     //declare local variables
     string fileName;
+    string outputFileName;
     vector<string> fileText;
     int mainInsert;
     int mainSelect;
@@ -39,36 +48,37 @@ int main() {
 
     //get file from user
     cout<<"\nFile to convert:";
-    cout << "SQLQuery15.sql for testing\n";
-    //cin >> fileName;       //commented out for testing
-    fileName = "/Users/stevenfuller/github/SQL_practice/SQLQuery15.sql";
-    //fileName = "C:\\Users\\Steven\\Desktop\\code\\SQL_practice\\SQLQuery15.txt";
+    cin >> fileName;       //commented out for testing
+
 
     readFile(fileName, fileText);
 
-    //cout <<"Enter name of table to UPDATE:";
-    //cin >> updateTable;       //commented out for testing
-    updateTable = "tblCaseCharge";
+    cout <<"Enter name of table to UPDATE:";
+    cin >> updateTable;       //commented out for testing
 
     //Display the test in file
     //Display(fileText);
     
-    //should be 5 for test file (SQLQuery15)
+    //Get the location of the main INSERT INTO script
     mainInsert = FindInsert(fileText,  updateTable);
 
-    //should be 227 for test file (SQLQuery15)
+    //Get the locaiton of the main SELECT script
     mainSelect = FindSelect(fileText, mainInsert);
 
-    OutputHead(fileText, mainInsert);
+    cout << "Enter file to write to:";
+    cin >>  outputFileName;
+
+    //Insert any scripts before the main INSERT INTO script.
+    OutputHead(fileText, mainInsert, outputFileName);
 
     //Function call to find the variables in each line.
-    VariablesSwap(mainSelect, fileText, updateTable, lastAs);
+    VariablesSwap(mainSelect, fileText, updateTable, lastAs, outputFileName);
 
     //Function call to find the location of the FROM keyword.
     fromLocation = FindFrom(fileText, lastAs);
 
     //Funciton call to output rest of text to file
-    OutputJoin(fromLocation,fileText);
+    OutputJoin(fromLocation,fileText, outputFileName);
 
     return 0;
 }
@@ -101,7 +111,6 @@ int FindInsert(vector<string> fileText, string updateTable){
     for(int i=0; i<fileText.size(); i++){
         if(fileText[i] == "INSERT INTO " + updateTable || fileText[i] == "insert into " + updateTable || fileText[i] == "Insert into " + updateTable){
             mainInsert = i;
-            //cout << "\nMainInsert: " <<  mainInsert <<endl;
             break;
         }
     }
@@ -148,7 +157,6 @@ int FindSelect(vector<string> fileText, int mainInsert){
     for(int j=mainInsert; j<fileText.size(); j++){
         if(regex_search(fileText[j], m, r) || regex_search(fileText[j], m, s) || regex_search(fileText[j], m, t)){
             mainSelect = j;
-            //cout << "MainSelect: " << mainSelect << endl;
             break;
         }
     }
@@ -159,7 +167,7 @@ int FindSelect(vector<string> fileText, int mainInsert){
 //This function is uses to find and swap the location of the variables. 
 //Takes mainSelect, fileText, updateTable as inputs.
 //This funciton currently works with 3 versions of AS: AS, As, as.
-void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, int& lastAs){
+void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, int& lastAs, string outputFileName){
     //regex expressions needed to find variables
     regex r("(?:^|\\W\\b)AS(?:$|\\W\\b)");
     regex t("(?:^|\\W\\b)as(?:$|\\W\\b)");
@@ -199,42 +207,38 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
                 str = str2 + " = " + str1;
             }
 
-            OutputSet(str, count, updateTable);
+            OutputSet(str, count, updateTable, outputFileName);
             count++;
         }
         lastAs = count + mainSelect;
     }
 }
 
-void OutputHead(vector<string> fileText, int mainInsert){
-    string outputFileName;
+void OutputHead(vector<string> fileText, int mainInsert, string outputFileName){
     fstream fileOut;
-    outputFileName = "/Users/stevenfuller/github/SQL_practice/testOutput.sql";
 
+    //open/create outputfile and clear out data
     fileOut.open(outputFileName, ios::out | ios::trunc);
     fileOut.close();
 
+    //Open output file as append
     fileOut.open(outputFileName, ios::app);
 
+    //output header data to file.
     for(int i=0; i<mainInsert; i++){
         fileOut << fileText[i] << endl;
     }
 
+    //close file
     fileOut.close();
 }
 
 //This funciton outputs the data to a file.
 //Takes str, count, and updatetable as inputs.
-void OutputSet(string str, int count, string updateTable){
-    string outputFileName;
+void OutputSet(string str, int count, string updateTable, string outputFileName){
     fstream fileOut;
-    outputFileName = "/Users/stevenfuller/github/SQL_practice/testOutput.sql";
 
-    //cout << "Enter file to write to:";
-    //cin >>  outputFileName;
-
-    
-
+    //Output the table to update.
     if(count == 0){
         fileOut.open(outputFileName, ios::app);
         fileOut << "UPDATE " << updateTable << endl;
@@ -242,6 +246,7 @@ void OutputSet(string str, int count, string updateTable){
         fileOut << str << endl;
         fileOut.close();
     }
+    //Output the values to update and their value.
     else{
         fileOut.open(outputFileName, ios::app);
         fileOut << str << endl;
@@ -252,13 +257,8 @@ void OutputSet(string str, int count, string updateTable){
 
 //This funciton outputs all the joins and other exclutionary statements to the file.
 //Takes fromLocation and fileText as inputs.
-void OutputJoin(int fromLocation, vector<string> fileText){
-    string outputFileName;
+void OutputJoin(int fromLocation, vector<string> fileText, string outputFileName){
     fstream fileOut;
-    outputFileName = "/Users/stevenfuller/github/SQL_practice/testOutput.sql";
-
-    //cout << "Enter file to write to:";
-    //cin >>  outputFileName;
 
     fileOut.open(outputFileName, ios::app);
     for(int i=fromLocation; i<fileText.size();i++){
