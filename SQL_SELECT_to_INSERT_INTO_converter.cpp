@@ -114,7 +114,9 @@ string InsertTable(int mainFrom, vector<string> fileText){
     string dataText = fileText[mainFrom];
     int fromIndex;
 
-    fromIndex = dataText.find("FROM")
+    fromIndex = dataText.find("FROM");
+    cout << fromIndex << endl;
+
 
 
 
@@ -124,8 +126,9 @@ string InsertTable(int mainFrom, vector<string> fileText){
 
 //This function is used to output any lines before the INSERT into the UPDATE file.
 //Takes fileText, and outputFileName as inputs.
-void OutputHead(vector<string> fileText, string outputFileName, int count, string str){
+void Output(vector<string> fileText, string outputFileName, int count, string str){
     fstream fileOut;
+
 
     //open/create outputfile and clear out data
     fileOut.open(outputFileName, ios::out | ios::trunc);
