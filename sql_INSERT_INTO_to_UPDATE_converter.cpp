@@ -214,6 +214,8 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
     }
 }
 
+//This function is used to output any lines before the INSERT into the UPDATE file.
+//Takes fileText, mainInsert, and outputFileName as inputs.
 void OutputHead(vector<string> fileText, int mainInsert, string outputFileName){
     fstream fileOut;
 
