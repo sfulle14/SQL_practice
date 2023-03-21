@@ -167,19 +167,16 @@ void VariablesSwap(int mainSelect, vector<string> fileText, string updateTable, 
     //Loop to go over all lines in the file and split the lines up.
     //first one should be 228 for test file (SQLQuery15)
     for(int i=mainSelect; i<fileText.size(); i++){
-        //loop to look for "AS"
         if(regex_search(fileText[i], m, r) || regex_search(fileText[i], m, t) || regex_search(fileText[i], m, x)){            
-            pos = m.position();        //find position of AS
-            str1 = fileText[i].substr(0,pos);   //find first variable
+            pos = m.position();                                                 //find position of AS
+            str1 = fileText[i].substr(0,pos);                                   //find first variable
             str1 = str1.substr(str1.find_first_not_of(" ,\\n\\r\\t\\f\\v"));    //remove leading spaces and ,
-            str2 = fileText[i].substr(pos+4);   //find start of second variable
+            str2 = fileText[i].substr(pos+4);                                   //find start of second variable
 
             if(str2.find("--")){ 
                 str2 = str2.substr(0,str2.find("--"));
                 str2 = str2.substr(str2.find_first_not_of(", \\n\\r\\t\\f\\v"));
             }
-
-            
             
             
             if(str1.substr(0,2) == "--"){
