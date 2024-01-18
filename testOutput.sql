@@ -247,4 +247,3 @@ CaseID = C.CaseID
          LEFT OUTER JOIN BOND_SETUP_cte BS WITH (NOLOCK) ON BS.Case_Violation_Id = CV.Case_Violation_Id AND BS.SeqNbr = 1
          LEFT OUTER JOIN BM_Source.dbo.Traffic_Criminal_Disposition LWTCD WITH (NOLOCK) ON LWTCD.Case_Violation_Id = TCD.Case_Violation_Id AND TCD.SeqNbr = 1 --GBDI-815:Map from dbo.Traffif_Criminal_Disposition the BMV_Susp_Class_Id to tblCaseCharge.LicenseSuspendedCode field
          LEFT OUTER JOIN tblLookup L WITH (NOLOCK) ON L.LookupGroup = 'LicenseSuspendedCode' AND L.LookupKey = LWTCD.BMV_Susp_Class_Id --GBDI-815:Map from dbo.Traffif_Criminal_Disposition the BMV_Susp_Class_Id to tblCaseCharge.LicenseSuspendedCode field
-
