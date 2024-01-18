@@ -2,7 +2,7 @@
       (SELECT BSET.Case_Violation_Id
              ,CASE WHEN ISNULL(BSET.Bond_Value,0) > 0 THEN BSET.Bond_Value ELSE ISNULL(BSET.Bond_Fee,0) END BondAmount
              ,ROW_NUMBER() OVER(PARTITION BY BSET.Case_Violation_Id ORDER BY BSET.Date_Bond_Setup DESC) AS SeqNbr
-         FROM BMLakewood_Source.dbo.Bond_Setups BSET WITH (NOLOCK))
+         FROM BM_Source.dbo.Bond_Setups BSET WITH (NOLOCK))
 INSERT INTO tblCaseCharge
             (CaseID
             ,SAOCaseNumber
@@ -450,20 +450,20 @@ INSERT INTO tblCaseCharge
         ,0 AS ProsecutorEssentialFactID
         ,0 AS CourtEssentialFactID
         ,C.ProbationEndDate AS ProbationEndDate
-    FROM BMLakewood_Source.dbo.Case_Violations CV WITH (NOLOCK)
-         INNER JOIN BMLakewood_Source.dbo.Traffic_Criminal_Cases TCC WITH (NOLOCK) ON TCC.Case_Number = CV.Case_Number
+    FROM BM_Source.dbo.Case_Violations CV WITH (NOLOCK)
+         INNER JOIN BM_Source.dbo.Traffic_Criminal_Cases TCC WITH (NOLOCK) ON TCC.Case_Number = CV.Case_Number
          INNER JOIN tblCase C WITH (NOLOCK) ON C.CaseNumber = CV.Case_Number
-         LEFT OUTER JOIN BMLakewood_Source.dbo.Case_Sentences CS WITH (NOLOCK) ON CS.Case_Violation_Id = CV.Case_Violation_Id
+         LEFT OUTER JOIN BM_Source.dbo.Case_Sentences CS WITH (NOLOCK) ON CS.Case_Violation_Id = CV.Case_Violation_Id
          LEFT OUTER JOIN XREF_TRCR_Disposition TCD WITH (NOLOCK) ON TCD.Case_Violation_Id = CV.Case_Violation_Id AND TCD.SeqNbr = 1
-         LEFT OUTER JOIN BMLakewood_Source.dbo.Pleas PSNT WITH (NOLOCK) ON PSNT.Plea_Id = ISNULL(TCD.Final_Plea_Id,CS.Plea_Id)
-         LEFT OUTER JOIN BMLakewood_Source.dbo.Sentences SNT WITH (NOLOCK) ON SNT.Sentence_Id = ISNULL(TCD.Sentence_Id,CS.Sentence_Id)
-         LEFT OUTER JOIN BMLakewood_Source.dbo.Violation_Codes VC WITH (NOLOCK) ON VC.violation_Id = CV.Violation_Id
+         LEFT OUTER JOIN BM_Source.dbo.Pleas PSNT WITH (NOLOCK) ON PSNT.Plea_Id = ISNULL(TCD.Final_Plea_Id,CS.Plea_Id)
+         LEFT OUTER JOIN BM_Source.dbo.Sentences SNT WITH (NOLOCK) ON SNT.Sentence_Id = ISNULL(TCD.Sentence_Id,CS.Sentence_Id)
+         LEFT OUTER JOIN BM_Source.dbo.Violation_Codes VC WITH (NOLOCK) ON VC.violation_Id = CV.Violation_Id
          LEFT OUTER JOIN tblStatute S WITH (NOLOCK) ON S.StatuteNumber = VC.Section_Number	--GBDI-721: Citation Tab Issue - Not enabled on Cases w/Citation Records
          --LEFT OUTER JOIN tblStatute S WITH (NOLOCK) ON S.StatuteID = CV.Violation_Id		--GBDI-721: Citation Tab Issue - Not enabled on Cases w/Citation Records
          LEFT OUTER JOIN tblStatute SSNT WITH (NOLOCK) ON SSNT.StatuteNumber = VC.Section_Number   --GBDI-721: Citation Tab Issue - Not enabled on Cases w/Citation Records
          --LEFT OUTER JOIN tblStatute SSNT WITH (NOLOCK) ON SSNT.StatuteID = CS.Violation_Id	--GBDI-721: Citation Tab Issue - Not enabled on Cases w/Citation Records
-         LEFT OUTER JOIN BMLakewood_Source.dbo.Degree_Of_Violations DOV WITH (NOLOCK) ON DOV.Degree_Of_Violation_Id = CV.Degree_Of_Violation_Id
-         LEFT OUTER JOIN BMLakewood_Source.dbo.Degree_Of_Violations DOVSNT WITH (NOLOCK) ON DOVSNT.Degree_Of_Violation_Id = CS.Degree_Of_Violation_Id
+         LEFT OUTER JOIN BM_Source.dbo.Degree_Of_Violations DOV WITH (NOLOCK) ON DOV.Degree_Of_Violation_Id = CV.Degree_Of_Violation_Id
+         LEFT OUTER JOIN BM_Source.dbo.Degree_Of_Violations DOVSNT WITH (NOLOCK) ON DOVSNT.Degree_Of_Violation_Id = CS.Degree_Of_Violation_Id
          LEFT OUTER JOIN tblParty PJSNT WITH (NOLOCK) ON PJSNT.PrimaryPartyType = 'JDG' AND PJSNT.WebValidation = CONVERT(VARCHAR(255),ISNULL(TCD.Judge_Id,CS.Judge_Id))
          LEFT OUTER JOIN BOND_SETUP_cte BS WITH (NOLOCK) ON BS.Case_Violation_Id = CV.Case_Violation_Id AND BS.SeqNbr = 1
          LEFT OUTER JOIN BMLakewood_Source.dbo.Traffic_Criminal_Disposition LWTCD WITH (NOLOCK) ON LWTCD.Case_Violation_Id = TCD.Case_Violation_Id AND TCD.SeqNbr = 1 --GBDI-815:Map from dbo.Traffif_Criminal_Disposition the BMV_Susp_Class_Id to tblCaseCharge.LicenseSuspendedCode field
